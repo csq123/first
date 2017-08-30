@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="cn.smbms.dao.bill.BillMapper">
+         <!--通过条件查询-billList  -->
+      <select id="getBillList" resultMap="billList">
+       SELECT b.*,p.proName FROM smbms_bill AS b ,smbms_provider AS p WHERE b.providerId=p.id
+        <if test="productName!= null and productName !=''">
+           and   productName like CONCAT('%',#{productName},'%')
+        </if>
+        <if test="providerId!=0">
+           and providerId=#{providerId}
+        </if>
+         <if test="isPayment!=0">
+           and isPayment=#{isPayment}
+        </if>
+           limit #{currentPageNo},#{pageSize}
+       </select>
+        <resultMap id="billList" type="Bill">
+         <result property="id" column="id"/>
+         <result property="billCode" column="billCode"/>
+         <result property="productName" column="productName"/>
+         <result property="providerName" column="proName"/>
+         <result property="totalPrice" column="totalPrice"/>
+         <result property="isPayment" column="isPayment"/>
+         <result property="creationDate" column="creationDate"/>
+     </resultMap>
+    <!--通过条件查询-订单表记录数 -->
+      <select id="getBillCount" resultType="int" >
+        SELECT count(*) FROM smbms_bill AS b ,smbms_provider AS p WHERE b.providerId=p.id
+        <if test="productName!= null and productName !=''">
+           and   productName like CONCAT('%',#{productName},'%')
+        </if>
+        <if test="providerId!=0">
+           and providerId=#{providerId}
+        </if>
+         <if test="isPayment!=0">
+           and isPayment=#{isPayment}
+        </if>
+       </select>
+       <!--查看个人信息  -->
+       <select id="getBillById" resultMap="bill1" parameterType="string">
+          SELECT b.*,p.proName FROM smbms_bill AS b JOIN smbms_provider AS p ON (b.providerId=p.id) WHERE b.id=#{id}
+       </select>
+       <resultMap id="bill1" type="Bill">
+       <result property="providerName" column="proName"/>
+       </resultMap>
+       <!--删除  -->
+       <delete id="deleteBillById" parameterType="String">
+            delete from smbms_bill where id=#{id}
+       </delete>
+       <!-- 通过id查看订单信息 -->
+       <select id="getBillCountByProviderId" resultType="int" >
+         select count(1) as billCount from smbms_bill where providerId = #{providerIds}
+       </select>
+       <select id="getBill" resultType="bill" parameterType="string">
+           select *from smbms_bill where billCode=#{billCode}
+       </select>
+       <!--修改  -->
+        <update id="modify" parameterType="bill">
+       update smbms_bill 
+       <trim prefix="set" suffixOverrides="," suffix="where id=#{id}">
+         <if test="billCode!=null">billCode=#{billCode},</if>
+         <if test="productName!=null">productName=#{productName},</if>
+         <if test="productUnit!=null">productUnit=#{productUnit},</if>
+         <if test="productCount!=null">productCount=#{productCount},</if>
+         <if test="totalPrice!=null">totalPrice=#{totalPrice},</if>
+         <if test="providerId!=null">providerId=#{providerId},</if>
+          <if test="isPayment!=null">isPayment=#{isPayment},</if>
+         <if test="modifyBy!=null">modifyBy=#{modifyBy},</if>
+         <if test="modifyDate!=null">modifyDate=#{modifyDate},</if>
+       </trim>
+     </update>
+     <!--添加  -->
+      <insert id="add" parameterType="bill">
+       insert into smbms_bill(billCode,productName,productUnit,productDesc,productCount,totalPrice,providerId,isPayment
+       ,createdBy,creationDate) values(#{billCode},#{productName},#{productUnit},#{productDesc},#{productCount}
+       ,#{totalPrice},#{providerId},#{isPayment},#{createdBy},#{creationDate})
+     </insert>
+</mapper>
